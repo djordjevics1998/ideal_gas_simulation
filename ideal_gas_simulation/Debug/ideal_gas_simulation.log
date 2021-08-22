@@ -1,0 +1,21 @@
+﻿  geometry.cpp
+C:\Users\fanst\source\repos\ideal_gas_simulation\ideal_gas_simulation\geometry.cpp(575,76): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+          with
+          [
+              _Rep=__int64
+          ]
+C:\Users\fanst\source\repos\ideal_gas_simulation\ideal_gas_simulation\geometry.cpp(709,76): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+          with
+          [
+              _Rep=__int64
+          ]
+C:\Users\fanst\source\repos\ideal_gas_simulation\ideal_gas_simulation\geometry.cpp(756,76): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+          with
+          [
+              _Rep=__int64
+          ]
+  main.cpp
+C:\Users\fanst\source\repos\ideal_gas_simulation\ideal_gas_simulation\main.cpp(11,29): warning C4244: 'initializing': conversion from 'double' to '__int64', possible loss of data
+C:\Users\fanst\source\repos\ideal_gas_simulation\ideal_gas_simulation\main.cpp(11,46): warning C4244: 'initializing': conversion from 'double' to '__int64', possible loss of data
+  Generating Code...
+  ideal_gas_simulation.vcxproj -> C:\Users\fanst\source\repos\ideal_gas_simulation\Debug\ideal_gas_simulation.exe

@@ -1,8 +1,6 @@
 #include "geometry.h"
 #include <math.h>
 #include <string>
-#include <iostream>
-#include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <random>
@@ -20,7 +18,7 @@ Event::Event() {
 	this->dt = 0;
 }
 
-Event::Event(Object* o1, Object* o2, long double t, long double dt) {
+Event::Event(Object* o1, Object* o2, double t, double dt) {
 	this->o1 = o1;
 	this->o2 = o2;
 	this->t = t;
@@ -35,7 +33,7 @@ bool Event::compare(Event* e1, Event* e2) {
 	return e1->t + e1->dt < e2->t + e2->dt;
 }
 
-Point2D::Point2D(long double x, long double y) {
+Point2D::Point2D(double x, double y) {
 	this->x = x;
 	this->y = y;
 }
@@ -45,20 +43,20 @@ Point2D::Point2D(Point2D *p) {
 	this->y = p->y;
 }
 
-long double Point2D::getX() {
+double Point2D::getX() {
 	return this->x;
 }
 
-long double Point2D::getY() {
+double Point2D::getY() {
 	return this->y;
 }
 
-void Point2D::set(long double x, long double y) {
+void Point2D::set(double x, double y) {
 	this->x = x;
 	this->y = y;
 }
 
-void Point2D::add(long double dx, long double dy) {
+void Point2D::add(double dx, double dy) {
 	this->x += dx;
 	this->y += dy;
 }
@@ -71,11 +69,11 @@ std::string Point2D::toString() {
 	return "Point2D(" + ssx.str() + ", " + ssy.str() + ")";
 }
 
-long double Point2D::distance(Point2D *p1, Point2D *p2) {
-	return sqrtl(COLL_A(p1->x, p2->x) + COLL_A(p1->y, p2->y));
+double Point2D::distance(Point2D *p1, Point2D *p2) {
+	return sqrt(COLL_A(p1->x, p2->x) + COLL_A(p1->y, p2->y));
 }
 
-Point3D::Point3D(long double x, long double y, long double z) {
+Point3D::Point3D(double x, double y, double z) {
 	this->x = x;
 	this->y = y;
 	this->z = z;
@@ -87,25 +85,25 @@ Point3D::Point3D(Point3D* p) {
 	this->z = p->z;
 }
 
-long double Point3D::getX() {
+double Point3D::getX() {
 	return this->x;
 }
 
-long double Point3D::getY() {
+double Point3D::getY() {
 	return this->y;
 }
 
-long double Point3D::getZ() {
+double Point3D::getZ() {
 	return this->z;
 }
 
-void Point3D::set(long double x, long double y, long double z) {
+void Point3D::set(double x, double y, double z) {
 	this->x = x;
 	this->y = y;
 	this->z = z;
 }
 
-void Point3D::add(long double dx, long double dy, long double dz) {
+void Point3D::add(double dx, double dy, double dz) {
 	this->x += dx;
 	this->y += dy;
 	this->z += dz;
@@ -120,8 +118,8 @@ std::string Point3D::toString() {
 	return "Point3D(" + ssx.str() + ", " + ssy.str() + ", " + ssz.str() + ")";
 }
 
-long double Point3D::distance(Point3D* p1, Point3D* p2) {
-	return sqrtl(COLL_A(p1->x, p2->x) + COLL_A(p1->y, p2->y) + COLL_A(p1->z, p2->z));
+double Point3D::distance(Point3D* p1, Point3D* p2) {
+	return sqrt(COLL_A(p1->x, p2->x) + COLL_A(p1->y, p2->y) + COLL_A(p1->z, p2->z));
 }
 
 void Object::initEvents(int n) {
@@ -142,8 +140,8 @@ Object::Object() {
 	this->events_n = 0;
 }
 
-long double Object::collision(Object *o1, Object *o2, long double act) {
-	long double t = act;
+double Object::collision(Object *o1, Object *o2, double act) {
+	double t = act;
 	if(o1->getType() == LINE_2D && o2->getType() == LINE_2D) return NOT_COLLIDING;
 	else if((o1->getType() == LINE_2D && o2->getType() == PARTICLE_2D) ||
 		(o1->getType() == PARTICLE_2D && o2->getType() == LINE_2D)) {
@@ -182,12 +180,12 @@ long double Object::collision(Object *o1, Object *o2, long double act) {
 		Point2D *c1 = p1->getCenter(), *c2 = p2->getCenter();
 		if(act < -0.5) {
 			if(Point2D::distance(c1, c2) < p1->getRadius() + p2->getRadius()) return INSIDE_EACH_OTHER;
-			long double a = COLL_A(v1->getX(), v2->getX()) + COLL_A(v1->getY(), v2->getY()),
+			double a = COLL_A(v1->getX(), v2->getX()) + COLL_A(v1->getY(), v2->getY()),
 				b = 2 * (COLL_B(c1->getX(), v1->getX(), c2->getX(), v2->getX()) + COLL_B(c1->getY(), v1->getY(), c2->getY(), v2->getY())),
 				c = COLL_A(c1->getX(), c2->getX()) + COLL_A(c1->getY(), c2->getY()) - COLL_A(p1->getRadius(), -p2->getRadius());
 			if(b * b - 4 * a * c < 0) return NOT_COLLIDING;
-			long double t1 = (-b - sqrtl(b * b - 4 * a * c)) / 2 / a,
-				t2 = (-b + sqrtl(b * b - 4 * a * c)) / 2 / a;
+			double t1 = (-b - sqrt(b * b - 4 * a * c)) / 2 / a,
+				t2 = (-b + sqrt(b * b - 4 * a * c)) / 2 / a;
 			if(t1 < 0 && t2 < 0) return NOT_COLLIDING;
 			else t = (t1 < 0) ? t2 : t1;
 		} else {
@@ -197,7 +195,7 @@ long double Object::collision(Object *o1, Object *o2, long double act) {
 				tang2 = Vector2D::projection(v2, &tang),
 				ort1 = Vector2D::projection(v1, &ort),
 				ort2 = Vector2D::projection(v2, &ort);
-			long double m1 = p1->getMass(), m2 = p2->getMass(),
+			double m1 = p1->getMass(), m2 = p2->getMass(),
 				a11 = (m1 - m2) / (m1 + m2), a12 = 2 * m2 / (m1 + m2),
 				a21 = 2 * m1 / (m1 + m2), a22 = (m2 - m1) / (m1 + m2);
 			v1->set(a11 * tang1.getX() + a12 * tang2.getX() + ort1.getX(), a11 * tang1.getY() + a12 * tang2.getY() + ort1.getY());
@@ -232,7 +230,6 @@ long double Object::collision(Object *o1, Object *o2, long double act) {
 			}
 		}
 		else {
-
 			Vector3D tangv = Vector3D::sub(v, &ortv);
 			ortv.multiply(-1);
 			v->set(tangv.getX() + ortv.getX(), tangv.getY() + ortv.getY(), tangv.getZ() + ortv.getZ());
@@ -247,12 +244,12 @@ long double Object::collision(Object *o1, Object *o2, long double act) {
 		Point3D* c1 = p1->getCenter(), * c2 = p2->getCenter();
 		if (act < -0.5) {
 			if (Point3D::distance(c1, c2) < p1->getRadius() + p2->getRadius()) return INSIDE_EACH_OTHER;
-			long double a = COLL_A(v1->getX(), v2->getX()) + COLL_A(v1->getY(), v2->getY()) + COLL_A(v1->getZ(), v2->getZ()),
+			double a = COLL_A(v1->getX(), v2->getX()) + COLL_A(v1->getY(), v2->getY()) + COLL_A(v1->getZ(), v2->getZ()),
 				b = 2 * (COLL_B(c1->getX(), v1->getX(), c2->getX(), v2->getX()) + COLL_B(c1->getY(), v1->getY(), c2->getY(), v2->getY()) + COLL_B(c1->getZ(), v1->getZ(), c2->getZ(), v2->getZ())),
 				c = COLL_A(c1->getX(), c2->getX()) + COLL_A(c1->getY(), c2->getY()) + COLL_A(c1->getZ(), c2->getZ()) - COLL_A(p1->getRadius(), -p2->getRadius());
 			if (b * b - 4 * a * c < 0) return NOT_COLLIDING;
-			long double t1 = (-b - sqrtl(b * b - 4 * a * c)) / 2 / a,
-				t2 = (-b + sqrtl(b * b - 4 * a * c)) / 2 / a;
+			double t1 = (-b - sqrt(b * b - 4 * a * c)) / 2 / a,
+				t2 = (-b + sqrt(b * b - 4 * a * c)) / 2 / a;
 			if (t1 < 0 && t2 < 0) return NOT_COLLIDING;
 			else t = (t1 < 0) ? t2 : t1;
 		}
@@ -264,7 +261,7 @@ long double Object::collision(Object *o1, Object *o2, long double act) {
 				ort2 = Vector3D::sub(v2, &tang2);
 
 
-			long double m1 = p1->getMass(), m2 = p2->getMass(),
+			double m1 = p1->getMass(), m2 = p2->getMass(),
 				a11 = (m1 - m2) / (m1 + m2), a12 = 2 * m2 / (m1 + m2),
 				a21 = 2 * m1 / (m1 + m2), a22 = (m2 - m1) / (m1 + m2);
 			v1->set(a11* tang1.getX() + a12 * tang2.getX() + ort1.getX(), a11* tang1.getY() + a12 * tang2.getY() + ort1.getY(), a11* tang1.getZ() + a12 * tang2.getZ() + ort1.getZ());
@@ -309,7 +306,7 @@ std::string Line2D::toString() {
 	return "Line2D(" + this->p1->toString() + ", " + this->p2->toString() + ")";
 }
 
-void Line2D::progress(long double t) {
+void Line2D::progress(double t) {
 
 }
 
@@ -344,7 +341,7 @@ std::string Triangle::toString() {
 	return "Triangle(" + this->p1->toString() + ", " + this->p2->toString() + ", " + this->p3->toString() + ")";
 }
 
-void Triangle::progress(long double t) {
+void Triangle::progress(double t) {
 
 }
 
@@ -354,7 +351,7 @@ Triangle::~Triangle() {
 	delete p3;
 }
 
-Vector2D::Vector2D(long double x, long double y) {
+Vector2D::Vector2D(double x, double y) {
 	set(x, y);
 }
 
@@ -368,29 +365,29 @@ Vector2D::Vector2D(Point2D *p1, Point2D *p2, bool normalize) : Vector2D(p1, p2) 
 Vector2D::Vector2D(Vector2D *v) : Vector2D(v->x, v->y) {
 }
 
-long double Vector2D::getX() {
+double Vector2D::getX() {
 	return this->x;
 }
 
-long double Vector2D::getY() {
+double Vector2D::getY() {
 	return this->y;
 }
 
-void Vector2D::set(long double x, long double y) {
+void Vector2D::set(double x, double y) {
 	this->x = x;
 	this->y = y;
 }
 
-long double Vector2D::len() {
-	return sqrtl(SQR(this->x) + SQR(this->y));
+double Vector2D::len() {
+	return sqrt(SQR(this->x) + SQR(this->y));
 }
 
-void Vector2D::multiply(long double m) {
+void Vector2D::multiply(double m) {
 	this->x *= m;
 	this->y *= m;
 }
 
-long double Vector2D::scalar(Vector2D *v) {
+double Vector2D::scalar(Vector2D *v) {
 	return this->x * v->x + this->y * v->y;
 }
 
@@ -416,7 +413,7 @@ Vector2D Vector2D::sub(Vector2D* from, Vector2D* what) {
 	return Vector2D(from->x - what->x, from->y - what->y);
 }
 
-Vector3D::Vector3D(long double x, long double y, long double z) {
+Vector3D::Vector3D(double x, double y, double z) {
 	set(x, y, z);
 }
 
@@ -430,35 +427,35 @@ Vector3D::Vector3D(Point3D* p1, Point3D* p2, bool normalize) : Vector3D(p1, p2) 
 Vector3D::Vector3D(Vector3D* v) : Vector3D(v->x, v->y, v->z) {
 }
 
-long double Vector3D::getX() {
+double Vector3D::getX() {
 	return this->x;
 }
 
-long double Vector3D::getY() {
+double Vector3D::getY() {
 	return this->y;
 }
 
-long double Vector3D::getZ() {
+double Vector3D::getZ() {
 	return this->z;
 }
 
-void Vector3D::set(long double x, long double y, long double z) {
+void Vector3D::set(double x, double y, double z) {
 	this->x = x;
 	this->y = y;
 	this->z = z;
 }
 
-long double Vector3D::len() {
-	return sqrtl(SQR(this->x) + SQR(this->y) + SQR(this->z));
+double Vector3D::len() {
+	return sqrt(SQR(this->x) + SQR(this->y) + SQR(this->z));
 }
 
-void Vector3D::multiply(long double m) {
+void Vector3D::multiply(double m) {
 	this->x *= m;
 	this->y *= m;
 	this->z *= m;
 }
 
-long double Vector3D::scalar(Vector3D* v) {
+double Vector3D::scalar(Vector3D* v) {
 	return this->x * v->x + this->y * v->y + this->z * v->z;
 }
 
@@ -491,7 +488,7 @@ Vector3D Vector3D::sub(Vector3D* from, Vector3D* what) {
 	return Vector3D(from->x - what->x, from->y - what->y, from->z - what->z);
 }
 
-Particle2D::Particle2D(Point2D *c, long double r, long double m, long double vx, long double vy) {
+Particle2D::Particle2D(Point2D *c, double r, double m, double vx, double vy) {
 	this->c = new Point2D(c);
 	this->r = r;
 	this->m = m;
@@ -502,11 +499,11 @@ Point2D * Particle2D::getCenter() {
 	return this->c;
 }
 
-long double Particle2D::getRadius() {
+double Particle2D::getRadius() {
 	return this->r;
 }
 
-long double Particle2D::getMass() {
+double Particle2D::getMass() {
 	return this->m;
 }
 
@@ -514,7 +511,7 @@ Vector2D * Particle2D::getVelocity() {
 	return this->v;
 }
 
-void Particle2D::progress(long double t) {
+void Particle2D::progress(double t) {
 	this->c->add(this->v->getX() * t, this->v->getY() * t);
 }
 
@@ -531,7 +528,7 @@ Particle2D::~Particle2D() {
 	delete v;
 }
 
-Particle3D::Particle3D(Point3D* c, long double r, long double m, long double vx, long double vy, long double vz) {
+Particle3D::Particle3D(Point3D* c, double r, double m, double vx, double vy, double vz) {
 	this->c = new Point3D(c);
 	this->r = r;
 	this->m = m;
@@ -542,11 +539,11 @@ Point3D* Particle3D::getCenter() {
 	return this->c;
 }
 
-long double Particle3D::getRadius() {
+double Particle3D::getRadius() {
 	return this->r;
 }
 
-long double Particle3D::getMass() {
+double Particle3D::getMass() {
 	return this->m;
 }
 
@@ -554,7 +551,7 @@ Vector3D* Particle3D::getVelocity() {
 	return this->v;
 }
 
-void Particle3D::progress(long double t) {
+void Particle3D::progress(double t) {
 	this->c->add(this->v->getX() * t, this->v->getY() * t, this->v->getZ() * t);
 }
 
@@ -574,7 +571,7 @@ Particle3D::~Particle3D() {
 void Simulation::simulate() {
 	std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
 	std::uniform_real_distribution<> distR(0, 1);
-	long double t = 0, avg_pv = 0, temp, dp = 0, dt = 0;
+	double t = 0, avg_pv = 0, temp, dp = 0, dt = 0;
 
 	Event** events_1, ** events_2;
 	all_events_p = new Event * [(objs_len * (objs_len - 1)) / 2];
@@ -592,9 +589,6 @@ void Simulation::simulate() {
 	std::multiset<Event*, decltype(Event::compare)*> allEvs(all_events_p, all_events_p + (objs_len * (objs_len - 1)) / 2, Event::compare);
 
 	Event* tEv;
-
-	std::ofstream myfile;
-	myfile.open("pv_3d_1728.txt");
 	for (int b = 0; b < sim_count * sim_step; b++) {
 
 		tEv = (*allEvs.begin());
@@ -641,25 +635,22 @@ void Simulation::simulate() {
 
 		if ((b + 1) % sim_step == 0) {
 			avg_pv += Vs * dp / dt;
-			std::cout << (b + 1) / sim_step << ". " << Vs * dp / dt << " " << N * kB * T << std::endl;
-			myfile << Vs * dp / dt << std::endl;
+			if (listener != nullptr) listener->OnSimulationStep(Vs * dp / dt, N * kB * T, (b + 1) / sim_step - 1);
 			dp = 0;
 			dt = 0;
-			if (listener != nullptr) listener->OnSimulationStep(Vs * dp / dt);
 			//for (int l = walls_len; l < objs_len; l++) myfile << static_cast<Particle2D*>(objs[l])->getVelocity()->len() << endl;
 		}
-		if (listener != nullptr) listener->OnSimulationIteration(objs, objs_len);
+		if (listener != nullptr) listener->OnSimulationIteration(objs, objs_len, b);
 	}
-	myfile.close();
 
-	std::cout << avg_pv / sim_count << std::endl;
+	//std::cout << avg_pv / sim_count << std::endl;
 }
 
 void Simulation::setOnSimulationListener(IOnSimulationListener* listener) {
 	this->listener = listener;
 }
 
-Simulation::Simulation(long double kB, long double T, long double hfw, long double r_1, long double r_2, long double m_1, long double m_2, long double rate, long long sim_step, long long sim_count, int row, int col) {
+Simulation::Simulation(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col) {
 	this->kB = kB;
 	this->T = T;
 	this->hfw = hfw;
@@ -693,7 +684,7 @@ Simulation::~Simulation() {
 	if (listener != nullptr) delete listener;
 }
 
-Simulation2D::Simulation2D(long double kB, long double T, long double hfw, long double r_1, long double r_2, long double m_1, long double m_2, long double rate, long long sim_step, long long sim_count, int row, int col) : Simulation(kB, T, hfw, r_1, r_2, m_1, m_2, rate, sim_step, sim_count, row, col) {
+Simulation2D::Simulation2D(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col) : Simulation(kB, T, hfw, r_1, r_2, m_1, m_2, rate, sim_step, sim_count, row, col) {
 	N = row * col;
 	walls_len = 4;
 	Vs = hfw / 2;
@@ -707,7 +698,7 @@ void Simulation2D::run() {
 	if (objs_len != 0) return;
 	objs_len = N + walls_len;
 	std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
-	std::normal_distribution<long double> distM_1(0, sqrtl(kB * T / m_1)), distM_2(0, sqrtl(kB * T / m_2));
+	std::normal_distribution<double> distM_1(0, sqrt(kB * T / m_1)), distM_2(0, sqrt(kB * T / m_2));
 	std::uniform_real_distribution<> distR(0, 1);
 
 	Point2D** exts2D = new Point2D * [4];
@@ -725,7 +716,7 @@ void Simulation2D::run() {
 	for (int l = 0; l < 4; l++) delete exts2D[l];
 	delete[] exts2D;
 
-	long double stepw = 2 * hfw / (row + 1), steph = 2 * hfw / (col + 1);
+	double stepw = 2 * hfw / (row + 1), steph = 2 * hfw / (col + 1);
 	bool isFirstParticle;
 	for (int l = 0; l < row; l++)
 		for (int j = 0; j < col; j++) {
@@ -739,7 +730,7 @@ Simulation2D::~Simulation2D() {
 
 }
 
-Simulation3D::Simulation3D(long double kB, long double T, long double hfw, long double r_1, long double r_2, long double m_1, long double m_2, long double rate, long long sim_step, long long sim_count, int row, int col, int stack) : Simulation(kB, T, hfw, r_1, r_2, m_1, m_2, rate, sim_step, sim_count, row, col) {
+Simulation3D::Simulation3D(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col, int stack) : Simulation(kB, T, hfw, r_1, r_2, m_1, m_2, rate, sim_step, sim_count, row, col) {
 	this->stack = stack;
 	N = row * col * stack;
 	walls_len = 12;
@@ -754,7 +745,7 @@ void Simulation3D::run() {
 	if (objs_len != 0) return;
 	objs_len = N + walls_len;
 	std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
-	std::normal_distribution<long double> distM_1(0, sqrtl(kB * T / m_1)), distM_2(0, sqrtl(kB * T / m_2));
+	std::normal_distribution<double> distM_1(0, sqrt(kB * T / m_1)), distM_2(0, sqrt(kB * T / m_2));
 	std::uniform_real_distribution<> distR(0, 1);
 
 	Point3D** exts3D = new Point3D * [8];
@@ -784,7 +775,7 @@ void Simulation3D::run() {
 	for (int l = 0; l < 8; l++) delete exts3D[l];
 	delete[] exts3D;
 
-	long double stepw = 2 * hfw / (row + 1), steph = 2 * hfw / (col + 1), steps = 2 * hfw / (stack + 1);
+	double stepw = 2 * hfw / (row + 1), steph = 2 * hfw / (col + 1), steps = 2 * hfw / (stack + 1);
 	bool isFirstParticle;
 	for (int l = 0; l < row; l++)
 		for (int j = 0; j < col; j++)

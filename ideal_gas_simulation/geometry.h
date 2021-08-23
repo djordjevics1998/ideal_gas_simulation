@@ -12,45 +12,45 @@ class Object;
 class Event {
 	public:
 		Object* o1, *o2;
-		long double t, dt;
+		double t, dt;
 		Event();
-		Event(Object* o1, Object* o2, long double t, long double dt);
+		Event(Object* o1, Object* o2, double t, double dt);
 		static bool compare(Event* e1, Event* e2);
 };
 
 class Point2D {
 	protected:
-		long double x, y;
+		double x, y;
 	
 	public:
-		Point2D(long double x, long double y);
+		Point2D(double x, double y);
 		Point2D(Point2D *p);
 		
-		long double getX();
-		long double getY();
+		double getX();
+		double getY();
 		
-		void set(long double x, long double y);
-		void add(long double dx, long double dy);
+		void set(double x, double y);
+		void add(double dx, double dy);
 		std::string toString();
-		static long double distance(Point2D *p1, Point2D *p2);
+		static double distance(Point2D *p1, Point2D *p2);
 };
 
 class Point3D {
 protected:
-	long double x, y, z;
+	double x, y, z;
 
 public:
-	Point3D(long double x, long double y, long double z);
+	Point3D(double x, double y, double z);
 	Point3D(Point3D* p);
 
-	long double getX();
-	long double getY();
-	long double getZ();
+	double getX();
+	double getY();
+	double getZ();
 
-	void set(long double x, long double y, long double z);
-	void add(long double dx, long double dy, long double dz);
+	void set(double x, double y, double z);
+	void add(double dx, double dy, double dz);
 	std::string toString();
-	static long double distance(Point3D* p1, Point3D* p2);
+	static double distance(Point3D* p1, Point3D* p2);
 };
 
 class Object {
@@ -62,8 +62,8 @@ class Object {
 		void initEvents(int n);
 		int getEventsLen();
 		Event** getEvents();
-		virtual void progress(long double t) = 0;
-		static long double collision(Object *o1, Object *o2, long double act);
+		virtual void progress(double t) = 0;
+		static double collision(Object *o1, Object *o2, double act);
 		static bool compare(Object* o1, Object* o2);
 		virtual TYPE getType() = 0;
 		virtual std::string toString() = 0;
@@ -81,7 +81,7 @@ class Line2D : public Object {
 		Line2D(Point2D *p1, Point2D *p2);
 		Point2D * getFirstPoint();
 		Point2D * getSecondPoint();
-		void progress(long double t);
+		void progress(double t);
 		std::string toString();
 		~Line2D();
 };
@@ -98,27 +98,27 @@ public:
 	Point3D* getFirstPoint();
 	Point3D* getSecondPoint();
 	Point3D* getThirdPoint();
-	void progress(long double t);
+	void progress(double t);
 	std::string toString();
 	~Triangle();
 };
 
 class Vector2D {
 	protected:
-		long double x, y;
+		double x, y;
 	
 	public:
-		Vector2D(long double x, long double y);
+		Vector2D(double x, double y);
 		Vector2D(Point2D *p1, Point2D *p2);
 		Vector2D(Point2D *p1, Point2D *p2, bool normalize);
 		Vector2D(Vector2D *v);
 		
-		long double getX();
-		long double getY();
-		void set(long double x, long double y);
-		long double len();
-		void multiply(long double m);
-		long double scalar(Vector2D *v);
+		double getX();
+		double getY();
+		void set(double x, double y);
+		double len();
+		void multiply(double m);
+		double scalar(Vector2D *v);
 		std::string toString();
 		
 		static Vector2D projection(Vector2D *v_orig, Vector2D *v_on);
@@ -128,21 +128,21 @@ class Vector2D {
 
 class Vector3D {
 protected:
-	long double x, y, z;
+	double x, y, z;
 
 public:
-	Vector3D(long double x, long double y, long double z);
+	Vector3D(double x, double y, double z);
 	Vector3D(Point3D* p1, Point3D* p2);
 	Vector3D(Point3D* p1, Point3D* p2, bool normalize);
 	Vector3D(Vector3D* v);
 
-	long double getX();
-	long double getY();
-	long double getZ();
-	void set(long double x, long double y, long double z);
-	long double len();
-	void multiply(long double m);
-	long double scalar(Vector3D* v);
+	double getX();
+	double getY();
+	double getZ();
+	void set(double x, double y, double z);
+	double len();
+	void multiply(double m);
+	double scalar(Vector3D* v);
 	std::string toString();
 	
 	static Vector3D vector(Vector3D* v1, Vector3D* v2, bool normalize);
@@ -155,18 +155,18 @@ class Particle2D : public Object {
 	protected:
 		Point2D *c;
 		Vector2D *v;
-		long double r, m;
+		double r, m;
 		TYPE getType();
 	
 	public:
 		void initEvents(int n);
 		Event** getEvents();
-		Particle2D(Point2D *c, long double r, long double m, long double vx, long double vy);
+		Particle2D(Point2D *c, double r, double m, double vx, double vy);
 		Point2D * getCenter();
 		Vector2D *getVelocity();
-		long double getRadius();
-		long double getMass();
-		void progress(long double t);
+		double getRadius();
+		double getMass();
+		void progress(double t);
 		std::string toString();
 		~Particle2D();
 };
@@ -175,40 +175,40 @@ class Particle3D : public Object {
 protected:
 	Point3D* c;
 	Vector3D* v;
-	long double r, m;
+	double r, m;
 	TYPE getType();
 
 public:
 	void initEvents(int n);
 	Event** getEvents();
-	Particle3D(Point3D* c, long double r, long double m, long double vx, long double vy, long double vz);
+	Particle3D(Point3D* c, double r, double m, double vx, double vy, double vz);
 	Point3D* getCenter();
 	Vector3D* getVelocity();
-	long double getRadius();
-	long double getMass();
-	void progress(long double t);
+	double getRadius();
+	double getMass();
+	void progress(double t);
 	std::string toString();
 	~Particle3D();
 };
 
 class IOnSimulationListener {
 public:
-	virtual void OnSimulationIteration(Object** objs, int objs_len) = 0;
-	virtual void OnSimulationStep(long double pV) = 0;
+	virtual void OnSimulationIteration(Object** objs, int objs_len, int sim_ite) = 0;
+	virtual void OnSimulationStep(double pV, double NkBT, int sim_step) = 0;
 };
 
 class Simulation {
 protected:
 	int row, col, N, walls_len, objs_len;
 	long long sim_step, sim_count;
-	long double kB, T, hfw, r_1, r_2, m_1, m_2, Vs, rate;
+	double kB, T, hfw, r_1, r_2, m_1, m_2, Vs, rate;
 	Object** objs;
 	Event** all_events_p;
 	IOnSimulationListener* listener;
 	void simulate();
 
 public:
-	Simulation(long double kB, long double T, long double hfw, long double r_1, long double r_2, long double m_1, long double m_2, long double rate, long long sim_step, long long sim_count, int row, int col);
+	Simulation(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col);
 	void setOnSimulationListener(IOnSimulationListener* listener);
 	virtual void run() = 0;
 	~Simulation();
@@ -217,7 +217,7 @@ public:
 class Simulation2D : Simulation {
 
 public:
-	Simulation2D(long double kB, long double T, long double hfw, long double r_1, long double r_2, long double m_1, long double m_2, long double rate, long long sim_step, long long sim_count, int row, int col);
+	Simulation2D(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col);
 	void setOnSimulationListener(IOnSimulationListener* listener);
 	void run();
 	~Simulation2D();
@@ -228,7 +228,7 @@ protected:
 	int stack;
 
 public:
-	Simulation3D(long double kB, long double T, long double hfw, long double r_1, long double r_2, long double m_1, long double m_2, long double rate, long long sim_step, long long sim_count, int row, int col, int stack);
+	Simulation3D(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col, int stack);
 	void setOnSimulationListener(IOnSimulationListener* listener);
 	void run();
 	~Simulation3D();

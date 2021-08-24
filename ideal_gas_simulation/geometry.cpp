@@ -18,7 +18,7 @@ Event::Event() {
 	this->dt = 0;
 }
 
-Event::Event(Object* o1, Object* o2, double t, double dt) {
+Event::Event(PhObject* o1, PhObject* o2, double t, double dt) {
 	this->o1 = o1;
 	this->o2 = o2;
 	this->t = t;
@@ -122,25 +122,25 @@ double Point3D::distance(Point3D* p1, Point3D* p2) {
 	return sqrt(COLL_A(p1->x, p2->x) + COLL_A(p1->y, p2->y) + COLL_A(p1->z, p2->z));
 }
 
-void Object::initEvents(int n) {
+void PhObject::initEvents(int n) {
 	this->events_n = n;
 	this->events = new Event*[n];
 }
 
-Event** Object::getEvents() {
+Event** PhObject::getEvents() {
 	return this->events;
 }
 
-int Object::getEventsLen() {
+int PhObject::getEventsLen() {
 	return this->events_n;
 }
 
-Object::Object() {
+PhObject::PhObject() {
 	this->events = NULL;
 	this->events_n = 0;
 }
 
-double Object::collision(Object *o1, Object *o2, double act) {
+double PhObject::collision(PhObject *o1, PhObject *o2, double act) {
 	double t = act;
 	if(o1->getType() == LINE_2D && o2->getType() == LINE_2D) return NOT_COLLIDING;
 	else if((o1->getType() == LINE_2D && o2->getType() == PARTICLE_2D) ||
@@ -277,11 +277,11 @@ double Object::collision(Object *o1, Object *o2, double act) {
 	return t;
 }
 
-bool Object::compare(Object* o1, Object* o2) {
+bool PhObject::compare(PhObject* o1, PhObject* o2) {
 	return o1->events_n == 0 ? false : o2->events_n == 0 ? true : Event::compare(o1->events[0], o2->events[0]);
 }
 
-Object::~Object() {
+PhObject::~PhObject() {
 	delete[] events;
 }
 
@@ -581,7 +581,7 @@ void Simulation::simulate() {
 		events_1 = objs[l]->getEvents();
 		for (int j = l + 1; j < objs_len; j++) {
 			events_2 = objs[j]->getEvents();
-			all_events_p[b++] = events_1[j - 1] = new Event(objs[l], objs[j], t, Object::collision(objs[l], objs[j], -1));
+			all_events_p[b++] = events_1[j - 1] = new Event(objs[l], objs[j], t, PhObject::collision(objs[l], objs[j], -1));
 			if (events_1[j - 1]->dt <= -0.5) events_1[j - 1]->dt -= distR(rng);
 			events_2[l] = events_1[j - 1];
 		}
@@ -594,7 +594,7 @@ void Simulation::simulate() {
 		tEv = (*allEvs.begin());
 		for (int l = 0; l < objs_len; l++) objs[l]->progress((tEv->t - t) + tEv->dt);
 
-		temp = Object::collision(tEv->o1, tEv->o2, tEv->dt);
+		temp = PhObject::collision(tEv->o1, tEv->o2, tEv->dt);
 		dp += temp;
 		dt += (tEv->t - t) + tEv->dt;
 		t = tEv->t + tEv->dt;
@@ -609,7 +609,7 @@ void Simulation::simulate() {
 
 					allEvs.erase(itt);
 					events_1[l]->t = t;
-					events_1[l]->dt = Object::collision(events_1[l]->o1, events_1[l]->o2, -1);
+					events_1[l]->dt = PhObject::collision(events_1[l]->o1, events_1[l]->o2, -1);
 					if (events_1[l]->dt <= -0.5) events_1[l]->dt -= distR(rng);
 					allEvs.insert(events_1[l]);
 				}
@@ -626,7 +626,7 @@ void Simulation::simulate() {
 
 					allEvs.erase(itt);
 					events_1[l]->t = t;
-					events_1[l]->dt = Object::collision(events_1[l]->o1, events_1[l]->o2, -1);
+					events_1[l]->dt = PhObject::collision(events_1[l]->o1, events_1[l]->o2, -1);
 					if (events_1[l]->dt <= -0.5) events_1[l]->dt -= distR(rng);
 					allEvs.insert(events_1[l]);
 				}
@@ -707,7 +707,7 @@ void Simulation2D::run() {
 	exts2D[2] = new Point2D(hfw, hfw);
 	exts2D[3] = new Point2D(hfw, -hfw);
 
-	objs = new Object * [objs_len];
+	objs = new PhObject * [objs_len];
 	objs[0] = new Line2D(exts2D[0], exts2D[1]);
 	objs[1] = new Line2D(exts2D[1], exts2D[2]);
 	objs[2] = new Line2D(exts2D[2], exts2D[3]);
@@ -758,7 +758,7 @@ void Simulation3D::run() {
 	exts3D[6] = new Point3D(hfw, hfw, -hfw);
 	exts3D[7] = new Point3D(hfw, -hfw, -hfw);
 
-	objs = new Object * [objs_len];
+	objs = new PhObject * [objs_len];
 	objs[0] = new Triangle(exts3D[0], exts3D[1], exts3D[2]);
 	objs[1] = new Triangle(exts3D[0], exts3D[1], exts3D[3]);
 	objs[2] = new Triangle(exts3D[4], exts3D[5], exts3D[6]);

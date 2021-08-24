@@ -7,14 +7,14 @@
 #define UNKNOWN -3
 enum TYPE {LINE_2D, PARTICLE_2D, TRIANGLE, PARTICLE_3D};
 
-class Object;
+class PhObject;
 
 class Event {
 	public:
-		Object* o1, *o2;
+		PhObject* o1, *o2;
 		double t, dt;
 		Event();
-		Event(Object* o1, Object* o2, double t, double dt);
+		Event(PhObject* o1, PhObject* o2, double t, double dt);
 		static bool compare(Event* e1, Event* e2);
 };
 
@@ -53,24 +53,24 @@ public:
 	static double distance(Point3D* p1, Point3D* p2);
 };
 
-class Object {
+class PhObject {
 	protected:
 		Event** events;
 		int events_n;
 	public:
-		Object();
+		PhObject();
 		void initEvents(int n);
 		int getEventsLen();
 		Event** getEvents();
 		virtual void progress(double t) = 0;
-		static double collision(Object *o1, Object *o2, double act);
-		static bool compare(Object* o1, Object* o2);
+		static double collision(PhObject *o1, PhObject *o2, double act);
+		static bool compare(PhObject* o1, PhObject* o2);
 		virtual TYPE getType() = 0;
 		virtual std::string toString() = 0;
-		~Object();
+		~PhObject();
 };
 
-class Line2D : public Object {
+class Line2D : public PhObject {
 	protected:
 		Point2D *p1, *p2;
 		TYPE getType();
@@ -86,7 +86,7 @@ class Line2D : public Object {
 		~Line2D();
 };
 
-class Triangle : public Object {
+class Triangle : public PhObject {
 protected:
 	Point3D* p1, * p2, * p3;
 	TYPE getType();
@@ -151,7 +151,7 @@ public:
 	static Vector3D sub(Vector3D* from, Vector3D* what);
 };
 
-class Particle2D : public Object {
+class Particle2D : public PhObject {
 	protected:
 		Point2D *c;
 		Vector2D *v;
@@ -171,7 +171,7 @@ class Particle2D : public Object {
 		~Particle2D();
 };
 
-class Particle3D : public Object {
+class Particle3D : public PhObject {
 protected:
 	Point3D* c;
 	Vector3D* v;
@@ -193,7 +193,7 @@ public:
 
 class IOnSimulationListener {
 public:
-	virtual void OnSimulationIteration(Object** objs, int objs_len, int sim_ite) = 0;
+	virtual void OnSimulationIteration(PhObject** objs, int objs_len, int sim_ite) = 0;
 	virtual void OnSimulationStep(double pV, double NkBT, int sim_step) = 0;
 };
 
@@ -202,7 +202,7 @@ protected:
 	int row, col, N, walls_len, objs_len;
 	long long sim_step, sim_count;
 	double kB, T, hfw, r_1, r_2, m_1, m_2, Vs, rate;
-	Object** objs;
+	PhObject** objs;
 	Event** all_events_p;
 	IOnSimulationListener* listener;
 	void simulate();

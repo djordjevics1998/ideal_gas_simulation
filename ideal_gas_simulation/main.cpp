@@ -15,7 +15,7 @@ public:
 		myfile.open("pv_3d_1728.txt");
 	}
 
-	void OnSimulationIteration(Object** objs, int objs_len, int sim_ite) {
+	void OnSimulationIteration(PhObject** objs, int objs_len, int sim_ite) {
 
 	}
 	void OnSimulationStep(double pV, double NkBT, int sim_step) {

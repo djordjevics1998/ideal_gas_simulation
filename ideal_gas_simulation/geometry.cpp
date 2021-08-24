@@ -149,7 +149,7 @@ double PhObject::collision(PhObject *o1, PhObject *o2, double act) {
 		Particle2D *p = static_cast<Particle2D *>(o1->getType() == LINE_2D ? o2 : o1);
 		Point2D *p1 = sw->getFirstPoint(), *p2 = sw->getSecondPoint(), *ctr = p->getCenter();
 		Vector2D *v = p->getVelocity();
-
+		
 		Vector2D tang(p1, p2, true),
 			d1(ctr, p2),
 			ort(-tang.getY(), tang.getX()),
@@ -488,23 +488,51 @@ Vector3D Vector3D::sub(Vector3D* from, Vector3D* what) {
 	return Vector3D(from->x - what->x, from->y - what->y, from->z - what->z);
 }
 
-Particle2D::Particle2D(Point2D *c, double r, double m, double vx, double vy) {
-	this->c = new Point2D(c);
+ParticleConfig::ParticleConfig(int id, double r, double m) {
+	this->id = id;
 	this->r = r;
 	this->m = m;
+}
+
+ParticleConfig::ParticleConfig(ParticleConfig* pc) : ParticleConfig::ParticleConfig(pc->id, pc->r, pc->m) {
+
+}
+
+int ParticleConfig::getId() {
+	return this->id;
+}
+
+double ParticleConfig::getRadius() {
+	return this->r;
+}
+
+double ParticleConfig::getMass() {
+	return this->m;
+}
+
+Particle2D::Particle2D(int id, Point2D *c, double r, double m, double vx, double vy) : ParticleConfig(id, r, m) {
+	this->c = new Point2D(c);
 	this->v = new Vector2D(vx, vy);
+}
+
+Particle2D::Particle2D(ParticleConfig* pc, Point2D* c, double vx, double vy) : Particle2D::Particle2D(pc->getId(), c, pc->getRadius(), pc->getMass(), vx, vy) {
+
 }
 
 Point2D * Particle2D::getCenter() {
 	return this->c;
 }
 
+int Particle2D::getId() {
+	return ParticleConfig::getId();
+}
+
 double Particle2D::getRadius() {
-	return this->r;
+	return ParticleConfig::getRadius();
 }
 
 double Particle2D::getMass() {
-	return this->m;
+	return ParticleConfig::getMass();
 }
 
 Vector2D * Particle2D::getVelocity() {
@@ -528,23 +556,29 @@ Particle2D::~Particle2D() {
 	delete v;
 }
 
-Particle3D::Particle3D(Point3D* c, double r, double m, double vx, double vy, double vz) {
+Particle3D::Particle3D(int id, Point3D* c, double r, double m, double vx, double vy, double vz) : ParticleConfig::ParticleConfig(id, r, m) {
 	this->c = new Point3D(c);
-	this->r = r;
-	this->m = m;
 	this->v = new Vector3D(vx, vy, vz);
+}
+
+Particle3D::Particle3D(ParticleConfig* pc, Point3D* c, double vx, double vy, double vz) : Particle3D::Particle3D(pc->getId(), c, pc->getRadius(), pc->getMass(), vx, vy, vz) {
+
 }
 
 Point3D* Particle3D::getCenter() {
 	return this->c;
 }
 
+int Particle3D::getId() {
+	return ParticleConfig::getId();
+}
+
 double Particle3D::getRadius() {
-	return this->r;
+	return ParticleConfig::getRadius();
 }
 
 double Particle3D::getMass() {
-	return this->m;
+	return ParticleConfig::getMass();
 }
 
 Vector3D* Particle3D::getVelocity() {
@@ -650,14 +684,12 @@ void Simulation::setOnSimulationListener(IOnSimulationListener* listener) {
 	this->listener = listener;
 }
 
-Simulation::Simulation(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col) {
+Simulation::Simulation(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col) {
 	this->kB = kB;
 	this->T = T;
 	this->hfw = hfw;
-	this->r_1 = r_1;
-	this->r_2 = r_2;
-	this->m_1 = m_1;
-	this->m_2 = m_2;
+	this->pc1 = new ParticleConfig(pc1);
+	this->pc2 = new ParticleConfig(pc2);
 	this->rate = rate;
 	this->sim_step = sim_step;
 	this->sim_count = sim_count;
@@ -673,6 +705,8 @@ Simulation::Simulation(double kB, double T, double hfw, double r_1, double r_2, 
 }
 
 Simulation::~Simulation() {
+	delete pc1;
+	delete pc2;
 	if (objs != nullptr) {
 		for (int l = 0; l < objs_len; l++) delete objs[l];
 		delete[] objs;
@@ -684,7 +718,7 @@ Simulation::~Simulation() {
 	if (listener != nullptr) delete listener;
 }
 
-Simulation2D::Simulation2D(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col) : Simulation(kB, T, hfw, r_1, r_2, m_1, m_2, rate, sim_step, sim_count, row, col) {
+Simulation2D::Simulation2D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col) : Simulation(kB, T, hfw, pc1, pc2, rate, sim_step, sim_count, row, col) {
 	N = row * col;
 	walls_len = 4;
 	Vs = hfw / 2;
@@ -698,7 +732,7 @@ void Simulation2D::run() {
 	if (objs_len != 0) return;
 	objs_len = N + walls_len;
 	std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
-	std::normal_distribution<double> distM_1(0, sqrt(kB * T / m_1)), distM_2(0, sqrt(kB * T / m_2));
+	std::normal_distribution<double> distM_1(0, sqrt(kB * T / pc1->getMass())), distM_2(0, sqrt(kB * T / pc2->getMass()));
 	std::uniform_real_distribution<> distR(0, 1);
 
 	Point2D** exts2D = new Point2D * [4];
@@ -721,7 +755,7 @@ void Simulation2D::run() {
 	for (int l = 0; l < row; l++)
 		for (int j = 0; j < col; j++) {
 			isFirstParticle = distR(rng) < rate;
-			objs[walls_len + l * col + j] = new Particle2D(new Point2D((l - row / 2 + 0.5) * stepw, (j - col / 2 + 0.5) * steph), isFirstParticle ? r_1 : r_2, isFirstParticle ? m_1 : m_2, isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng));
+			objs[walls_len + l * col + j] = new Particle2D(isFirstParticle ? this->pc1 : this->pc2, new Point2D((l - row / 2 + 0.5) * stepw, (j - col / 2 + 0.5) * steph), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng));
 		}
 	simulate();
 }
@@ -730,7 +764,7 @@ Simulation2D::~Simulation2D() {
 
 }
 
-Simulation3D::Simulation3D(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col, int stack) : Simulation(kB, T, hfw, r_1, r_2, m_1, m_2, rate, sim_step, sim_count, row, col) {
+Simulation3D::Simulation3D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col, int stack) : Simulation(kB, T, hfw, pc1, pc2, rate, sim_step, sim_count, row, col) {
 	this->stack = stack;
 	N = row * col * stack;
 	walls_len = 12;
@@ -745,7 +779,7 @@ void Simulation3D::run() {
 	if (objs_len != 0) return;
 	objs_len = N + walls_len;
 	std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
-	std::normal_distribution<double> distM_1(0, sqrt(kB * T / m_1)), distM_2(0, sqrt(kB * T / m_2));
+	std::normal_distribution<double> distM_1(0, sqrt(kB * T / pc1->getMass())), distM_2(0, sqrt(kB * T / pc2->getMass()));
 	std::uniform_real_distribution<> distR(0, 1);
 
 	Point3D** exts3D = new Point3D * [8];
@@ -781,7 +815,7 @@ void Simulation3D::run() {
 		for (int j = 0; j < col; j++)
 			for (int k = 0; k < stack; k++) {
 				isFirstParticle = distR(rng) < rate;
-				objs[walls_len + l * col * stack + j * stack + k] = new Particle3D(new Point3D((l - row / 2 + 0.5) * stepw, (j - col / 2 + 0.5) * steph, (k - stack / 2 + 0.5) * steps), isFirstParticle ? r_1 : r_2, isFirstParticle ? m_1 : m_2, isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng));
+				objs[walls_len + l * col * stack + j * stack + k] = new Particle3D(isFirstParticle ? this->pc1 : this->pc2, new Point3D((l - row / 2 + 0.5) * stepw, (j - col / 2 + 0.5) * steph, (k - stack / 2 + 0.5) * steps), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng));
 			}
 	simulate();
 }

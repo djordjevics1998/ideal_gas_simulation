@@ -76,8 +76,6 @@ class Line2D : public PhObject {
 		TYPE getType();
 	
 	public:
-		void initEvents(int n);
-		Event** getEvents();
 		Line2D(Point2D *p1, Point2D *p2);
 		Point2D * getFirstPoint();
 		Point2D * getSecondPoint();
@@ -92,8 +90,6 @@ protected:
 	TYPE getType();
 
 public:
-	void initEvents(int n);
-	Event** getEvents();
 	Triangle(Point3D* p1, Point3D* p2, Point3D* p3);
 	Point3D* getFirstPoint();
 	Point3D* getSecondPoint();
@@ -151,19 +147,31 @@ public:
 	static Vector3D sub(Vector3D* from, Vector3D* what);
 };
 
-class Particle2D : public PhObject {
+class ParticleConfig {
+protected:
+	int id;
+	double r, m;
+
+public:
+	ParticleConfig(int id, double r, double m);
+	ParticleConfig(ParticleConfig* pc);
+	int getId();
+	double getRadius();
+	double getMass();
+};
+
+class Particle2D : public PhObject, ParticleConfig {
 	protected:
 		Point2D *c;
 		Vector2D *v;
-		double r, m;
 		TYPE getType();
 	
 	public:
-		void initEvents(int n);
-		Event** getEvents();
-		Particle2D(Point2D *c, double r, double m, double vx, double vy);
+		Particle2D(int id, Point2D *c, double r, double m, double vx, double vy);
+		Particle2D(ParticleConfig* pc, Point2D* c, double vx, double vy);
 		Point2D * getCenter();
 		Vector2D *getVelocity();
+		int getId();
 		double getRadius();
 		double getMass();
 		void progress(double t);
@@ -171,19 +179,18 @@ class Particle2D : public PhObject {
 		~Particle2D();
 };
 
-class Particle3D : public PhObject {
+class Particle3D : public PhObject, ParticleConfig {
 protected:
 	Point3D* c;
 	Vector3D* v;
-	double r, m;
 	TYPE getType();
 
 public:
-	void initEvents(int n);
-	Event** getEvents();
-	Particle3D(Point3D* c, double r, double m, double vx, double vy, double vz);
+	Particle3D(int id, Point3D* c, double r, double m, double vx, double vy, double vz);
+	Particle3D(ParticleConfig* pc, Point3D* c, double vx, double vy, double vz);
 	Point3D* getCenter();
 	Vector3D* getVelocity();
+	int getId();
 	double getRadius();
 	double getMass();
 	void progress(double t);
@@ -201,14 +208,15 @@ class Simulation {
 protected:
 	int row, col, N, walls_len, objs_len;
 	long long sim_step, sim_count;
-	double kB, T, hfw, r_1, r_2, m_1, m_2, Vs, rate;
+	double kB, T, hfw, Vs, rate;
+	ParticleConfig* pc1, * pc2;
 	PhObject** objs;
 	Event** all_events_p;
 	IOnSimulationListener* listener;
 	void simulate();
 
 public:
-	Simulation(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col);
+	Simulation(double kB, double T, double hfw, ParticleConfig *pc1, ParticleConfig *pc2, double rate, long long sim_step, long long sim_count, int row, int col);
 	void setOnSimulationListener(IOnSimulationListener* listener);
 	virtual void run() = 0;
 	~Simulation();
@@ -217,7 +225,7 @@ public:
 class Simulation2D : Simulation {
 
 public:
-	Simulation2D(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col);
+	Simulation2D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col);
 	void setOnSimulationListener(IOnSimulationListener* listener);
 	void run();
 	~Simulation2D();
@@ -228,7 +236,7 @@ protected:
 	int stack;
 
 public:
-	Simulation3D(double kB, double T, double hfw, double r_1, double r_2, double m_1, double m_2, double rate, long long sim_step, long long sim_count, int row, int col, int stack);
+	Simulation3D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col, int stack);
 	void setOnSimulationListener(IOnSimulationListener* listener);
 	void run();
 	~Simulation3D();

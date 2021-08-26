@@ -180,6 +180,13 @@ double PhObject::collision(PhObject *o1, PhObject *o2, double act) {
 		Point2D *c1 = p1->getCenter(), *c2 = p2->getCenter();
 		if(act < -0.5) {
 			if(Point2D::distance(c1, c2) < p1->getRadius() + p2->getRadius()) return INSIDE_EACH_OTHER;
+			else if (Point2D::distance(c1, c2) == p1->getRadius() + p2->getRadius()) {
+				Vector2D d(c1, c2, true),
+					tang1 = Vector2D::projection(v1, &d),
+					tang2 = Vector2D::projection(v2, &d),
+					tangs = Vector2D::sub(&tang1, &tang2);
+				if (tangs.len() == 0 || tangs.getX() / (c1->getX() - c2->getX()) < 0 || tangs.getY() / (c1->getY() - c2->getY()) < 0) return NOT_COLLIDING;
+			}
 			double a = COLL_A(v1->getX(), v2->getX()) + COLL_A(v1->getY(), v2->getY()),
 				b = 2 * (COLL_B(c1->getX(), v1->getX(), c2->getX(), v2->getX()) + COLL_B(c1->getY(), v1->getY(), c2->getY(), v2->getY())),
 				c = COLL_A(c1->getX(), c2->getX()) + COLL_A(c1->getY(), c2->getY()) - COLL_A(p1->getRadius(), -p2->getRadius());
@@ -188,6 +195,15 @@ double PhObject::collision(PhObject *o1, PhObject *o2, double act) {
 				t2 = (-b + sqrt(b * b - 4 * a * c)) / 2 / a;
 			if(t1 < 0 && t2 < 0) return NOT_COLLIDING;
 			else t = (t1 < 0) ? t2 : t1;
+			if (t == 0) { // check if going to collide or get away
+				Vector2D d(c1, c2, true),
+					tang1 = Vector2D::projection(v1, &d),
+					tang2 = Vector2D::projection(v2, &d),
+					tangs = Vector2D::sub(&tang1, &tang2);
+				//std::cout << v1->toString() << " " << v2->toString() << std::endl;
+				if (tangs.len() == 0 || tangs.getX() / (c1->getX() - c2->getX()) < 0 || tangs.getY() / (c1->getY() - c2->getY()) < 0) return NOT_COLLIDING;
+			}
+			else if (t < 0) return NOT_COLLIDING; // quantisation error
 		} else {
 			Vector2D tang(c1, c2, true),
 				ort(-tang.getY(), tang.getX()),
@@ -244,6 +260,13 @@ double PhObject::collision(PhObject *o1, PhObject *o2, double act) {
 		Point3D* c1 = p1->getCenter(), * c2 = p2->getCenter();
 		if (act < -0.5) {
 			if (Point3D::distance(c1, c2) < p1->getRadius() + p2->getRadius()) return INSIDE_EACH_OTHER;
+			else if (Point3D::distance(c1, c2) == p1->getRadius() + p2->getRadius()) {
+				Vector3D d(c1, c2, true),
+					tang1 = Vector3D::projection(v1, &d),
+					tang2 = Vector3D::projection(v2, &d),
+					tangs = Vector3D::sub(&tang1, &tang2);
+				if (tangs.len() == 0 || tangs.getX() / (c1->getX() - c2->getX()) < 0 || tangs.getY() / (c1->getY() - c2->getY()) < 0 || tangs.getZ() / (c1->getZ() - c2->getZ()) < 0) return NOT_COLLIDING;
+			}
 			double a = COLL_A(v1->getX(), v2->getX()) + COLL_A(v1->getY(), v2->getY()) + COLL_A(v1->getZ(), v2->getZ()),
 				b = 2 * (COLL_B(c1->getX(), v1->getX(), c2->getX(), v2->getX()) + COLL_B(c1->getY(), v1->getY(), c2->getY(), v2->getY()) + COLL_B(c1->getZ(), v1->getZ(), c2->getZ(), v2->getZ())),
 				c = COLL_A(c1->getX(), c2->getX()) + COLL_A(c1->getY(), c2->getY()) + COLL_A(c1->getZ(), c2->getZ()) - COLL_A(p1->getRadius(), -p2->getRadius());
@@ -252,6 +275,15 @@ double PhObject::collision(PhObject *o1, PhObject *o2, double act) {
 				t2 = (-b + sqrt(b * b - 4 * a * c)) / 2 / a;
 			if (t1 < 0 && t2 < 0) return NOT_COLLIDING;
 			else t = (t1 < 0) ? t2 : t1;
+			if (t == 0) { // check if going to collide or get away
+				Vector3D d(c1, c2, true),
+					tang1 = Vector3D::projection(v1, &d),
+					tang2 = Vector3D::projection(v2, &d),
+					tangs = Vector3D::sub(&tang1, &tang2);
+				//std::cout << v1->toString() << " " << v2->toString() << std::endl;
+				if (tangs.len() == 0 || tangs.getX() / (c1->getX() - c2->getX()) < 0 || tangs.getY() / (c1->getY() - c2->getY()) < 0 || tangs.getZ() / (c1->getZ() - c2->getZ()) < 0) return NOT_COLLIDING;
+			}
+			else if (t < 0) return NOT_COLLIDING; // quantisation error
 		}
 		else {
 			Vector3D tang(c1, c2, true),
@@ -548,7 +580,9 @@ TYPE Particle2D::getType() {
 }
 
 std::string Particle2D::toString() {
-	return "Particle2D(" + this->c->toString() + ", " + this->v->toString() + ")";
+	std::ostringstream ssr;
+	ssr << std::scientific << this->r;
+	return "Particle2D(" + this->c->toString() + ", " + ssr.str() + ", " + this->v->toString() + ")";
 }
 
 Particle2D::~Particle2D() {
@@ -622,6 +656,7 @@ void Simulation::simulate() {
 	}
 	std::multiset<Event*, decltype(Event::compare)*> allEvs(all_events_p, all_events_p + (objs_len * (objs_len - 1)) / 2, Event::compare);
 
+	if (listener != nullptr) listener->OnSimulationStart(objs, objs_len);
 	Event* tEv;
 	for (int b = 0; b < sim_count * sim_step; b++) {
 
@@ -676,6 +711,7 @@ void Simulation::simulate() {
 		}
 		if (listener != nullptr) listener->OnSimulationIteration(objs, objs_len, b);
 	}
+	if (listener != nullptr) listener->OnSimulationEnd(objs, objs_len);
 
 	//std::cout << avg_pv / sim_count << std::endl;
 }

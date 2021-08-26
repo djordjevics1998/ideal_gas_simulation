@@ -200,8 +200,10 @@ public:
 
 class IOnSimulationListener {
 public:
+	virtual void OnSimulationStart(PhObject** objs, int objs_len) = 0;
 	virtual void OnSimulationIteration(PhObject** objs, int objs_len, int sim_ite) = 0;
 	virtual void OnSimulationStep(double pV, double NkBT, int sim_step) = 0;
+	virtual void OnSimulationEnd(PhObject** objs, int objs_len) = 0;
 };
 
 class Simulation {

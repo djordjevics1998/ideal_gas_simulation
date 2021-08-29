@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 	const double kB = 1.3806503e-23, T = 273 + 30,
 		hfw = 1e-4, r_1 = 1e-7, r_2 = 5e-6, m_1 = 1, m_2 = 2;
 	const int row = 4, col = 4, stack = 12;
-	const long long sim_step = 500, sim_count = 1000;
+	const long long sim_step = 100, sim_count = 1000;
 	ParticleConfig pc1(0, r_1, m_1),
 		pc2(1, r_2, m_2);
 	int rows[] = {2, 3, 4, 5, 7, 10, 12, 15, 17, 20, 23, 25, 30, 35, 40};

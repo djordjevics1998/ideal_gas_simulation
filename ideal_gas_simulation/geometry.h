@@ -208,7 +208,7 @@ public:
 
 class Simulation {
 protected:
-	int row, col, N, walls_len, objs_len;
+	int row, col, N, walls_len, objs_len, N_offset, N_real;
 	long long sim_step, sim_count;
 	double kB, T, hfw, Vs, rate;
 	ParticleConfig* pc1, * pc2;
@@ -218,7 +218,7 @@ protected:
 	void simulate();
 
 public:
-	Simulation(double kB, double T, double hfw, ParticleConfig *pc1, ParticleConfig *pc2, double rate, long long sim_step, long long sim_count, int row, int col);
+	Simulation(double kB, double T, double hfw, ParticleConfig *pc1, ParticleConfig *pc2, double rate, long long sim_step, long long sim_count, int N_offset, int N_real, int row, int col);
 	void setOnSimulationListener(IOnSimulationListener* listener);
 	virtual void run() = 0;
 	~Simulation();
@@ -227,7 +227,7 @@ public:
 class Simulation2D : Simulation {
 
 public:
-	Simulation2D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col);
+	Simulation2D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int N_offset, int N_real, int row, int col);
 	void setOnSimulationListener(IOnSimulationListener* listener);
 	void run();
 	~Simulation2D();
@@ -238,7 +238,7 @@ protected:
 	int stack;
 
 public:
-	Simulation3D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col, int stack);
+	Simulation3D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int N_offset, int N_real, int row, int col, int stack);
 	void setOnSimulationListener(IOnSimulationListener* listener);
 	void run();
 	~Simulation3D();

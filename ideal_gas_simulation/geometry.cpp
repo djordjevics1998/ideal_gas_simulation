@@ -720,7 +720,7 @@ void Simulation::setOnSimulationListener(IOnSimulationListener* listener) {
 	this->listener = listener;
 }
 
-Simulation::Simulation(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col) {
+Simulation::Simulation(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int N_offset, int N_real, int row, int col) {
 	this->kB = kB;
 	this->T = T;
 	this->hfw = hfw;
@@ -729,6 +729,8 @@ Simulation::Simulation(double kB, double T, double hfw, ParticleConfig* pc1, Par
 	this->rate = rate;
 	this->sim_step = sim_step;
 	this->sim_count = sim_count;
+	this->N_offset = N_offset;
+	this->N_real = N_real;
 	this->row = row;
 	this->col = col;
 	this->listener = nullptr;
@@ -754,7 +756,7 @@ Simulation::~Simulation() {
 	if (listener != nullptr) delete listener;
 }
 
-Simulation2D::Simulation2D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col) : Simulation(kB, T, hfw, pc1, pc2, rate, sim_step, sim_count, row, col) {
+Simulation2D::Simulation2D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int N_offset, int N_real, int row, int col) : Simulation(kB, T, hfw, pc1, pc2, rate, sim_step, sim_count, N_offset, N_real, row, col) {
 	N = row * col;
 	walls_len = 4;
 	Vs = hfw / 2;
@@ -766,7 +768,7 @@ void Simulation2D::setOnSimulationListener(IOnSimulationListener* listener) {
 
 void Simulation2D::run() {
 	if (objs_len != 0) return;
-	objs_len = N + walls_len;
+	objs_len = (N - N_offset < N_real ? N - N_offset : N_real) + walls_len;
 	std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
 	std::normal_distribution<double> distM_1(0, sqrt(kB * T / pc1->getMass())), distM_2(0, sqrt(kB * T / pc2->getMass()));
 	std::uniform_real_distribution<> distR(0, 1);
@@ -789,10 +791,11 @@ void Simulation2D::run() {
 	double stepw = 2 * hfw / (row + 1), steph = 2 * hfw / (col + 1);
 	bool isFirstParticle;
 	for (int l = 0; l < row; l++)
-		for (int j = 0; j < col; j++) {
-			isFirstParticle = distR(rng) < rate;
-			objs[walls_len + l * col + j] = new Particle2D(isFirstParticle ? this->pc1 : this->pc2, new Point2D((l - row / 2 + 0.5) * stepw, (j - col / 2 + 0.5) * steph), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng));
-		}
+		for (int j = 0; j < col; j++) 
+			if(l * col + j >= N_offset && l * col + j < N_offset + N_real) {
+				isFirstParticle = distR(rng) < rate;
+				objs[walls_len + l * col + j - N_offset] = new Particle2D(isFirstParticle ? this->pc1 : this->pc2, new Point2D((l - row / 2 + 0.5) * stepw, (j - col / 2 + 0.5) * steph), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng));
+			}
 	simulate();
 }
 
@@ -800,7 +803,7 @@ Simulation2D::~Simulation2D() {
 
 }
 
-Simulation3D::Simulation3D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int row, int col, int stack) : Simulation(kB, T, hfw, pc1, pc2, rate, sim_step, sim_count, row, col) {
+Simulation3D::Simulation3D(double kB, double T, double hfw, ParticleConfig* pc1, ParticleConfig* pc2, double rate, long long sim_step, long long sim_count, int N_offset, int N_real, int row, int col, int stack) : Simulation(kB, T, hfw, pc1, pc2, rate, sim_step, sim_count, N_offset, N_real, row, col) {
 	this->stack = stack;
 	N = row * col * stack;
 	walls_len = 12;
@@ -813,7 +816,7 @@ void Simulation3D::setOnSimulationListener(IOnSimulationListener* listener) {
 
 void Simulation3D::run() {
 	if (objs_len != 0) return;
-	objs_len = N + walls_len;
+	objs_len = (N - N_offset < N_real ? N - N_offset : N_real) + walls_len;
 	std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
 	std::normal_distribution<double> distM_1(0, sqrt(kB * T / pc1->getMass())), distM_2(0, sqrt(kB * T / pc2->getMass()));
 	std::uniform_real_distribution<> distR(0, 1);
@@ -849,10 +852,11 @@ void Simulation3D::run() {
 	bool isFirstParticle;
 	for (int l = 0; l < row; l++)
 		for (int j = 0; j < col; j++)
-			for (int k = 0; k < stack; k++) {
-				isFirstParticle = distR(rng) < rate;
-				objs[walls_len + l * col * stack + j * stack + k] = new Particle3D(isFirstParticle ? this->pc1 : this->pc2, new Point3D((l - row / 2 + 0.5) * stepw, (j - col / 2 + 0.5) * steph, (k - stack / 2 + 0.5) * steps), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng));
-			}
+			for (int k = 0; k < stack; k++) 
+				if(l * col * stack + j * stack + k >= N_offset && l * col * stack + j * stack + k < N_offset + N_real) {
+					isFirstParticle = distR(rng) < rate;
+					objs[walls_len + l * col * stack + j * stack + k - N_offset] = new Particle3D(isFirstParticle ? this->pc1 : this->pc2, new Point3D((l - row / 2 + 0.5) * stepw, (j - col / 2 + 0.5) * steph, (k - stack / 2 + 0.5) * steps), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng), isFirstParticle ? distM_1(rng) : distM_2(rng));
+				}
 	simulate();
 }
 

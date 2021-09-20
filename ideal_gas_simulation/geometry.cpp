@@ -6,6 +6,7 @@
 #include <random>
 #include <chrono>
 #include <set>
+//#include <iostream>
 
 #define SQR(a) (a * a)
 #define COLL_A(a, b) ((a - b) * (a - b))
@@ -26,11 +27,17 @@ Event::Event(PhObject* o1, PhObject* o2, double t, double dt) {
 }
 
 bool Event::compare(Event* e1, Event* e2) {
-    if (e1->dt <= -0.5 && e2->dt <= -0.5) return e1->dt > e2->dt;
+    if (e1->dt <= -0.1 && e2->dt <= -0.1) return e1->dt > e2->dt;
+    if (e1->dt <= -0.1) return false;
+    if (e2->dt <= -0.1) return true;
+    if (e1->t + e1->dt == e2->t + e2->dt) return e1 < e2;
+    return e1->t + e1->dt < e2->t + e2->dt;
+    
+    /*if (e1->dt <= -0.5 && e2->dt <= -0.5) return e1->dt > e2->dt;
     if (e1->dt <= -0.5) return false;
     if (e2->dt <= -0.5) return true;
     if (e1->t + e1->dt == e2->t + e2->dt) return e1 < e2;
-    return e1->t + e1->dt < e2->t + e2->dt;
+    return e1->t + e1->dt < e2->t + e2->dt;*/
 }
 
 Point2D::Point2D(double x, double y) {
@@ -197,7 +204,8 @@ double PhObject::collision(PhObject* o1, PhObject* o2, double act) {
                 t2 = (-b + sqrt(b * b - 4 * a * c)) / 2 / a;
             if (t1 < 0 && t2 < 0) return NOT_COLLIDING;
             else t = (t1 < 0) ? t2 : t1;
-            if (t == 0) { // check if going to collide or get away
+            if (t <= 0) { // check if going to collide or get away
+                t = 0;
                 Vector2D d(c1, c2, true),
                     tang1 = Vector2D::projection(v1, &d),
                     tang2 = Vector2D::projection(v2, &d),
@@ -205,7 +213,7 @@ double PhObject::collision(PhObject* o1, PhObject* o2, double act) {
                 //std::cout << v1->toString() << " " << v2->toString() << std::endl;
                 if (tangs.len() == 0 || (c1->getX() != c2->getX() && tangs.getX() / (c1->getX() - c2->getX()) < 0) || (c1->getY() != c2->getY() && tangs.getY() / (c1->getY() - c2->getY()) < 0)) return NOT_COLLIDING;
             }
-            else if (t < 0) return NOT_COLLIDING; // quantisation error
+            //else if (t < 0) return INSIDE_EACH_OTHER; // quantisation error
         }
         else {
             Vector2D tang(c1, c2, true),
@@ -279,7 +287,8 @@ double PhObject::collision(PhObject* o1, PhObject* o2, double act) {
                 t2 = (-b + sqrt(b * b - 4 * a * c)) / 2 / a;
             if (t1 < 0 && t2 < 0) return NOT_COLLIDING;
             else t = (t1 < 0) ? t2 : t1;
-            if (t == 0) { // check if going to collide or get away
+            if (t <= 0) { // check if going to collide or get away
+                t = 0;
                 Vector3D d(c1, c2, true),
                     tang1 = Vector3D::projection(v1, &d),
                     tang2 = Vector3D::projection(v2, &d),
@@ -287,7 +296,7 @@ double PhObject::collision(PhObject* o1, PhObject* o2, double act) {
                 //std::cout << v1->toString() << " " << v2->toString() << std::endl;
                 if (tangs.len() == 0 || (c1->getX() != c2->getX() && tangs.getX() / (c1->getX() - c2->getX()) < 0) || (c1->getY() != c2->getY() && tangs.getY() / (c1->getY() - c2->getY()) < 0) || (c1->getZ() != c2->getZ() && tangs.getZ() / (c1->getZ() - c2->getZ()) < 0)) return NOT_COLLIDING;
             }
-            else if (t < 0) return NOT_COLLIDING; // quantisation error
+            //else if (t < 0) return INSIDE_EACH_OTHER; // quantisation error
         }
         else {
             Vector3D tang(c1, c2, true),
@@ -662,10 +671,21 @@ void Simulation::simulate() {
     std::multiset<Event*, decltype(Event::compare)*> allEvs(all_events_p, all_events_p + (objs_len * (objs_len - 1)) / 2, Event::compare);
 
     if (listener != nullptr) listener->OnSimulationStart(objs, objs_len);
-    Event* tEv;
+    Event* tEv, *pEv = nullptr;
     for (int b = 0; b < sim_count * sim_step; b++) {
 
+        auto tEvit = allEvs.begin();
         tEv = (*allEvs.begin());
+        while (pEv != nullptr && tEv == pEv && (tEv->t - t) + tEv->dt <= 0) { // hack da izbegnemo problem sa zaglavljenim kuglicama
+            //std::cout << tEv->dt << std::endl;;
+            allEvs.erase(tEvit);
+            tEv->dt = NOT_COLLIDING - distR(rng);
+            allEvs.insert(tEv);
+            tEvit = allEvs.begin();
+            tEv = (*allEvs.begin());
+        }
+        pEv = tEv;
+
         for (int l = 0; l < objs_len; l++) objs[l]->progress((tEv->t - t) + tEv->dt);
 
         temp = PhObject::collision(tEv->o1, tEv->o2, tEv->dt);

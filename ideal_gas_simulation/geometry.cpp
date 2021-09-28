@@ -158,9 +158,9 @@ double PhObject::collision(PhObject* o1, PhObject* o2, double act) {
         Vector2D* v = p->getVelocity();
 
         Vector2D tang(p1, p2, true),
-            d1(ctr, p2),
+            d(ctr, p2),
             ort(-tang.getY(), tang.getX()),
-            ortsw = Vector2D::projection(&d1, &ort),
+            ortsw = Vector2D::projection(&d, &ort),
             ortv = Vector2D::projection(v, &ort);
         if (act < -0.5) {
             if (ortsw.getX() * ortv.getX() + ortsw.getY() * ortv.getY() <= 0) {

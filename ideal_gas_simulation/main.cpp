@@ -28,6 +28,13 @@ public:
 		/*if (sim_ite % 100 == 0) {
 			for (int l = 0; l < objs_len; l++) cout << sim_ite << " " << l << " " << objs[l]->toString() << endl;
 		}*/
+		if (sim_ite == 7 || sim_ite == 500 || sim_ite == 1077) {
+			std::ofstream myfile;
+			myfile.open(prefix + "/" + name + "_intensities_" + std::to_string(sim_ite) + "_.txt");
+			for (int l = 0; l < objs_len; l++)
+				if (objs[l]->getType() == PARTICLE_2D) myfile << (static_cast<Particle2D*>(objs[l]))->getVelocity()->len() << std::endl;
+			myfile.close();
+		}
 	}
 
 	void OnSimulationStep(double pV, double NkBT, int sim_step) {
@@ -56,15 +63,15 @@ string toStringScientific(double t) {
 
 int main(int argc, char** argv) {
 	const double kB = 1.3806503e-23, T = 273 + 30,
-		hfw = 1e5, r_1 = 1e-10, r_2 = 5e-6, m_1 = 1, m_2 = 2;
+		hfw = 1e5, r_1 = 1e-6, r_2 = 5e-6, m_1 = 1, m_2 = 2;
 	const int row = 4, col = 4, stack = 12;
 	const long long sim_step = 50, sim_count = 1000;
 	ParticleConfig pc1(0, r_1, m_1),
 		pc2(1, r_2, m_2);
 	int rows[] = /*{1, 2, 3, 4, 5}; */ {1, 2, 3, 4, 5, 7, 10, 12, 15, 17, 20, 23, 25, 30, 35, 40};
 	string prefix, name;
-	for (double hfw = 1e-4; hfw <= 1e7; hfw *= 10) {
-		for (int l = 0; l < 9 /*16*/; l++) {
+	for (double hfw = 1e7; hfw < 1e8/*1e-4; hfw <= 1e7*/; hfw *= 10) {
+		for (int l = 15; l < 16; l++) {
 			/*string name = "pv_";
 			name += (is3D ? "3" : "2");
 			name += "d_" + std::to_string(N) + ".txt";*/
